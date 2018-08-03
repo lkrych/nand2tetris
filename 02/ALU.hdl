@@ -42,5 +42,32 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+   //handle zx, zy
+   Mux16(a=x, b=false, sel=zx, out=zeroX);
+   Mux16(a=y, b=false, sel=zy, out=zeroY);
+
+   //handle nx, ny
+    Not16(in=zeroX, out=notx1);
+    Mux16(a=zeroX, b=notx1, sel=nx, out=x2);
+    Not16(in=zeroY, out=noty1);
+    Mux16(a=zeroY, b=noty1, sel=ny, out=y2);
+
+    // handle f
+
+    Add16(a=x2, b=y2, out=xplusy);
+    And16(a=x2, b=y2, out=xandy);
+    Mux16(a=xandy, b=xplusy, sel=f, out=xy3);
+
+    // handle no
+    Not16(in=xy3, out=notxy3);
+    Mux16(a=xy3, b=notxy3, sel=no, out=out, out[15]=ng, out[0..7]=part1, out[8..15]=part2);
+
+    //handle zr
+    
+    Or8Way(in=part1, out=or1); // checking each 8-bit chunk for nonzero
+    Or8Way(in=part2, out=or2);
+    Or(a=or1, b=or2, out=nonzero); // checking if any digits are nonzero
+    Not(in=nonzero, out=zr); 
+
+
 }
